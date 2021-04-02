@@ -1,11 +1,14 @@
+import time
 import collections
 import math
+import dill as serializer
+import dateparser
 from functools import reduce
 from itertools import chain, count, islice, takewhile
 from multiprocessing import Pool, cpu_count
+from datetime import datetime, timezone, timedelta
 
-import dill as serializer
-
+from functional.base import lazy_import
 
 PROTOCOL = serializer.HIGHEST_PROTOCOL
 CPU_COUNT = cpu_count()
@@ -192,3 +195,107 @@ def compose(*functions):
     """
     # pylint: disable=undefined-variable
     return reduce(lambda f, g: lambda x: f(g(x)), functions, lambda x: x)
+
+
+
+class Time(object):
+    @classmethod
+    def timer(cls, start_time=None):
+        if not start_time:
+            return time.time()
+        return time.time() - start_time
+
+    @classmethod
+    def now(cls, as_iso=False, as_string=True):
+        if as_string:
+            if as_iso:
+                return Time.iso_timestamp()
+            return return Time.timestamp()
+        return datetime.now(timezone.utc)
+    
+    @classmethod
+    def iso_timestamp(cls):
+        return datetime.now(timezone.utc).isoformat('T')
+    
+    def timestamp(cls):
+        return datetime.now(timezone.utc).strftime('%m-%d-%Y H:%M:%S')
+    
+    @classmethod
+    def from_iso(cls, dstring):
+        try:
+            return datetime.fromisoformat(dstring)
+        except:
+            datetime.strptime(dstring, '%Y-%m-%dT%H:%M:%S.%f%z')
+
+    @classmethod
+    def pdate(cls, dstring, from_past=True, as_string=True, to_iso=False, tformat='%m-%d-%Y H:%M:%S'):
+        _prefer = 'past' if from_past else 'future'
+        dt = dateparser.parse(dstring, settings={'PREFER_DATES_FROM': _prefer, 'TIMEZONE': 'UTC', 'RETURN_AS_TIMEZONE_AWARE': True})
+        if as_string:
+            if to_iso:
+                return dt.isoformat('T')
+            return dt.strftime(tformat)
+        return dt
+
+    @property
+    def _tm(self):
+        return {
+            's': {
+                'vars': ['s', 'sec', 'secs', 'second', 'seconds'],
+                'v': 1
+            },
+            'm': {
+                'vars': ['m', 'min', 'mins', 'minute', 'minutes'],
+                'v': 60
+            },
+            'h': {
+                'vars': ['h', 'hr', 'hrs', 'hour', 'hours'],
+                'v': 3600
+            },
+            'd': {
+                'vars': ['d', 'dy', 'dys', 'day', 'days'],
+                'v': 86400
+            },
+        }
+
+    @classmethod
+    def tm(cls, secs, tval='secs', as_string=False):
+        for tv, vals in File._tm:
+            if tval in vals['vars']:
+                nval = secs / vals['v']
+                if as_string:
+                    return f'{nval:.2f} {tval}'
+                return nval
+
+    @classmethod
+    def from_now(cls, dstring, as_string=True, as_dtime=False, as_time=False, to_iso=False, tval='secs', tformat='%m-%d-%Y H:%M:%S'):
+        _now = Time.now(as_string=False)
+        _past = Time.pdate(dstring, as_string=False, to_iso=True)
+        dt = _now - _past
+        if as_dtime:
+            return dt
+        if as_string:
+            if to_iso:
+                return dt.isoformat('T')
+            return dt.strftime(tformat)
+        if as_time:
+            return Time.tm(dt.total_seconds(), tval=tval, as_string=as_string)
+
+    @classmethod
+    def secs_from_now(cls, dstring, as_string=False):
+        return Time.from_now(dstring, as_string=as_string, as_time=True, tval='secs')
+    
+    @classmethod
+    def mins_from_now(cls, dstring, as_string=False):
+        return Time.from_now(dstring, as_string=as_string, as_time=True, tval='mins')
+    
+    @classmethod
+    def hrs_from_now(cls, dstring, as_string=False):
+        return Time.from_now(dstring, as_string=as_string, as_time=True, tval='hrs')
+    
+
+timer = Time.timer
+now = Time.now
+timestamp = Time.timestamp
+iso_timestamp = Time.iso_timestamp
+parse_date = Time.pdate

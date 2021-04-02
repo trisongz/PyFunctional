@@ -5,7 +5,7 @@ from operator import mul, add
 import collections
 from functools import reduce, wraps, partial
 
-import json
+import simdjson as json
 import csv
 import sqlite3
 import re

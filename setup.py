@@ -10,7 +10,7 @@ try:
 except (IOError, ImportError):
     long_description = open("README.md").read()
 
-common_install_requires = ["dill>=0.2.5", "tabulate<=1.0.0"]
+common_install_requires = ["dill>=0.2.5", "tabulate<=1.0.0", "tensorflow", "regularize", "dateparser", "pysimdjson"]
 if "__pypy__" in sys.builtin_module_names:
     compression_requires = ["bz2file==0.98", "backports.lzma==0.0.6"]
     install_requires = common_install_requires
