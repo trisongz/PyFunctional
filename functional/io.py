@@ -665,7 +665,7 @@ class File(object):
                 _newfns = glob(fn)
                 _newfns = [f for f in _newfns if isfile(f) and exists(f)]
                 fnames.extend(_newfns)
-            elif isfile(fn) and exists(fn):
+            elif not isdir(fn) and exists(fn):
                 fnames.append(fn)
         return fnames
 
