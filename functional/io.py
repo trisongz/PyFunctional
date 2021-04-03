@@ -22,10 +22,11 @@ rmdir = gf.rmtree
 rm = gf.remove
 jparser = json.Parser()
 
-TextLineDataset = lazy_import('tensorflow.data.TextLineDataset')
-AUTOTUNE = lazy_import('tensorflow.data.experimental.AUTOTUNE')
-enable_eager_execution = lazy_import('tensorflow.compat.v1.enable_eager_execution')
-disable_v2_behavior = lazy_import('tensorflow.compat.v1.disable_v2_behavior')
+tf = lazy_import('tensorflow')
+TextLineDataset = tf.data.TextLineDataset
+AUTOTUNE = tf.data.experimental.AUTOTUNE
+enable_eager_execution = tf.compat.v1.enable_eager_execution
+disable_v2_behavior = tf.compat.v1.disable_v2_behavior
 
 
 WRITE_MODE = "wt"
