@@ -210,7 +210,7 @@ class Time(object):
         if as_string:
             if as_iso:
                 return Time.iso_timestamp()
-            return return Time.timestamp()
+            return Time.timestamp()
         return datetime.now(timezone.utc)
     
     @classmethod
